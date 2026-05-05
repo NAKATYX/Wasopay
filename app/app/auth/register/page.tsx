@@ -52,8 +52,9 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white/5 translate-x-1/3 translate-y-1/3" />
 
         <div className="relative flex-1 flex flex-col p-10 xl:p-14">
-          <Link href="/" className="mb-auto">
-            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={140} className="h-8 w-auto brightness-0 invert" priority />
+          <Link href="/" className="flex items-center gap-2.5 mb-auto">
+            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain brightness-0 invert" priority />
+            <span className="font-bold text-lg text-white">WasoPay</span>
           </Link>
 
           <div className="py-12">
@@ -91,8 +92,9 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-background">
         <div className="w-full max-w-[400px] space-y-6">
           <div className="lg:hidden">
-            <Link href="/">
-              <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={140} className="h-8 w-auto" priority />
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain" priority />
+              <span className="font-bold text-lg">WasoPay</span>
             </Link>
           </div>
 

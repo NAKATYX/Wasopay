@@ -179,7 +179,8 @@ export default function P2PMarketPage() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-50 h-14 flex items-center">
         <div className="max-w-[1400px] mx-auto w-full px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={120} className="h-7 w-auto" priority />
+            <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={28} className="h-7 w-7 object-contain" priority />
+            <span className="font-bold text-sm hidden sm:block">WasoPay</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-5 text-sm">

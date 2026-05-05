@@ -142,8 +142,9 @@ export default function WalletPage() {
                 <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
-            <Link href="/">
-              <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={120} className="h-7 w-auto" priority />
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={28} className="h-7 w-7 object-contain" priority />
+              <span className="font-bold text-sm">WasoPay</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">

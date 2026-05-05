@@ -35,8 +35,9 @@ export default function HomePage() {
       {/* ── Header ── */}
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/">
-            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={140} className="h-8 w-auto" priority />
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain" priority />
+            <span className="font-bold text-lg tracking-tight">WasoPay</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -242,7 +243,10 @@ export default function HomePage() {
       <footer className="border-t border-border bg-card">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
-            <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={120} className="h-7 w-auto" />
+            <div className="flex items-center gap-2">
+              <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={28} className="h-7 w-7 object-contain" />
+              <span className="font-bold">WasoPay</span>
+            </div>
 
             {/* Compliance badges */}
             <div className="flex flex-wrap gap-2">
