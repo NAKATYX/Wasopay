@@ -1,221 +1,339 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowUpDown, Zap, Info } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { ArrowUpDown, Zap, Shield, Clock, CheckCircle, ChevronDown } from "lucide-react"
 
-interface ExchangeRates {
-  [key: string]: {
-    [key: string]: number
-  }
+const RATES: Record<string, number> = {
+  USDT: 1672.10,
+  BTC:  110_284_500,
+  ETH:  5_812_300,
 }
 
-const EXCHANGE_RATES: ExchangeRates = {
-  USD: {
-    BTC: 0.000023,
-    ETH: 0.000307,
-    USDT: 1,
-    NGN: 1652,
-    USDC: 1.01, // Added USDC exchange rates
-  },
-  NGN: {
-    BTC: 0.000000014,
-    ETH: 0.000000186,
-    USDT: 0.000605,
-    USD: 0.000605,
-    USDC: 0.000611, // Added USDC exchange rates
-  },
-  BTC: {
-    USD: 43500,
-    NGN: 71862000,
-    ETH: 13.37,
-    USDT: 43500,
-    USDC: 44000, // Added USDC exchange rates
-  },
-  ETH: {
-    USD: 3250.5,
-    NGN: 5370826,
-    BTC: 0.0748,
-    USDT: 3250.5,
-    USDC: 3283.05, // Added USDC exchange rates
-  },
-  USDT: {
-    USD: 1,
-    NGN: 1652,
-    BTC: 0.000023,
-    ETH: 0.000307,
-    USDC: 1.01, // Added USDC exchange rates
-  },
-  USDC: {
-    USD: 0.99, // Added USDC exchange rates
-    NGN: 1635.65, // Added USDC exchange rates
-    BTC: 0.000023, // Added USDC exchange rates
-    ETH: 0.000299, // Added USDC exchange rates
-    USDT: 0.99, // Added USDC exchange rates
-  },
-}
-
-const CURRENCIES = [
-  { value: "USD", label: "USD", symbol: "$" },
-  { value: "NGN", label: "NGN", symbol: "₦" },
-  { value: "USDC", label: "USDC", symbol: "$" }, // Added USDC to the currency options
-  { value: "BTC", label: "BTC", symbol: "₿" },
-  { value: "ETH", label: "ETH", symbol: "Ξ" },
-  { value: "USDT", label: "USDT", symbol: "₮" },
+const ASSETS = [
+  { symbol: "USDT", name: "Tether",   glyph: "₮", color: "bg-teal-600" },
+  { symbol: "BTC",  name: "Bitcoin",  glyph: "₿", color: "bg-orange-500" },
+  { symbol: "ETH",  name: "Ethereum", glyph: "Ξ", color: "bg-blue-600" },
 ]
 
+const PAYMENT_METHODS = ["GTBank", "Kuda", "OPay", "PalmPay", "Access", "Zenith"]
+
+const FEE_PCT = 0.005 // 0.5%
+
+function AssetPicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const asset = ASSETS.find((a) => a.symbol === value)!
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-background hover:bg-muted transition-colors min-w-[100px]"
+      >
+        <div className={`w-6 h-6 rounded-full ${asset.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+          {asset.glyph}
+        </div>
+        <span className="font-semibold text-sm">{asset.symbol}</span>
+        <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-auto" />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg z-20 min-w-[160px] overflow-hidden">
+            {ASSETS.map((a) => (
+              <button
+                key={a.symbol}
+                type="button"
+                onClick={() => { onChange(a.symbol); setOpen(false) }}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted transition-colors ${
+                  a.symbol === value ? "bg-primary/5" : ""
+                }`}
+              >
+                <div className={`w-7 h-7 rounded-full ${a.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                  {a.glyph}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm">{a.symbol}</div>
+                  <div className="text-xs text-muted-foreground">{a.name}</div>
+                </div>
+                {a.symbol === value && <CheckCircle className="w-4 h-4 text-primary ml-auto" />}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export function ExpressTrading() {
-  const [payAmount, setPayAmount] = useState("0.00")
-  const [payCurrency, setPayCurrency] = useState("USD")
-  const [receiveCurrency, setReceiveCurrency] = useState("ETH")
-  const [receiveAmount, setReceiveAmount] = useState("0.000000")
-  const [isLoading, setIsLoading] = useState(false)
+  const [mode, setMode] = useState<"buy" | "sell">("buy")
+  const [asset, setAsset] = useState("USDT")
+  const [ngnAmount, setNgnAmount] = useState("")
+  const [cryptoAmount, setCryptoAmount] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState("GTBank")
+  const [loading, setLoading] = useState(false)
+  const [lastEdited, setLastEdited] = useState<"ngn" | "crypto">("ngn")
 
-  // Calculate exchange rate and amounts
+  const rate = RATES[asset] ?? 1
+  const fee = ngnAmount ? parseFloat(ngnAmount) * FEE_PCT : 0
+
+  const calcCrypto = useCallback(
+    (ngn: string) => {
+      const n = parseFloat(ngn)
+      if (!n || isNaN(n)) return ""
+      return (n / rate).toFixed(asset === "BTC" ? 8 : 4)
+    },
+    [rate, asset],
+  )
+
+  const calcNgn = useCallback(
+    (crypto: string) => {
+      const c = parseFloat(crypto)
+      if (!c || isNaN(c)) return ""
+      return (c * rate).toFixed(2)
+    },
+    [rate],
+  )
+
   useEffect(() => {
-    if (payAmount && !isNaN(Number(payAmount)) && Number(payAmount) > 0) {
-      const rate = EXCHANGE_RATES[payCurrency]?.[receiveCurrency] || 0
-      const calculated = (Number(payAmount) * rate).toFixed(6)
-      setReceiveAmount(calculated)
-    } else {
-      setReceiveAmount("0.000000")
+    if (lastEdited === "ngn" && ngnAmount) {
+      setCryptoAmount(calcCrypto(ngnAmount))
+    } else if (lastEdited === "crypto" && cryptoAmount) {
+      setNgnAmount(calcNgn(cryptoAmount))
     }
-  }, [payAmount, payCurrency, receiveCurrency])
+  }, [asset, rate, lastEdited, ngnAmount, cryptoAmount, calcCrypto, calcNgn])
 
-  const handleSwapCurrencies = () => {
-    const tempCurrency = payCurrency
-    const tempAmount = payAmount
-
-    setPayCurrency(receiveCurrency)
-    setReceiveCurrency(tempCurrency)
-    setPayAmount(receiveAmount)
-    setReceiveAmount(tempAmount)
+  const handleNgn = (v: string) => {
+    setNgnAmount(v)
+    setLastEdited("ngn")
+    setCryptoAmount(calcCrypto(v))
   }
 
-  const handleInstantTrade = async () => {
-    setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // Handle successful trade
-      console.log(`Trading ${payAmount} ${payCurrency} for ${receiveAmount} ${receiveCurrency}`)
-    }, 2000)
+  const handleCrypto = (v: string) => {
+    setCryptoAmount(v)
+    setLastEdited("crypto")
+    setNgnAmount(calcNgn(v))
   }
 
-  const exchangeRate = EXCHANGE_RATES[receiveCurrency]?.[payCurrency] || 0
-  const fee = 0.5 // 0.5% fee
-  const paySymbol = CURRENCIES.find((c) => c.value === payCurrency)?.symbol || ""
-  const receiveSymbol = CURRENCIES.find((c) => c.value === receiveCurrency)?.symbol || ""
+  const swap = () => {
+    setMode((m) => (m === "buy" ? "sell" : "buy"))
+  }
+
+  const submit = () => {
+    setLoading(true)
+    setTimeout(() => setLoading(false), 1800)
+  }
+
+  const canSubmit = !loading && parseFloat(ngnAmount) > 0
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-slate-900 border-slate-800 text-white">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Zap className="w-5 h-5 text-cyan-400" />
-          Express Buy/Sell
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        {/* You Pay Section */}
-        <div className="space-y-2">
-          <label className="text-sm text-slate-400">You Pay</label>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              value={payAmount}
-              onChange={(e) => setPayAmount(e.target.value)}
-              placeholder="0.00"
-              className="flex-1 bg-slate-800 border-slate-700 text-white text-lg font-medium"
-            />
-            <Select value={payCurrency} onValueChange={setPayCurrency}>
-              <SelectTrigger className="w-24 bg-slate-800 border-cyan-500 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {CURRENCIES.map((currency) => (
-                  <SelectItem key={currency.value} value={currency.value} className="text-white hover:bg-slate-700">
-                    {currency.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="w-full max-w-lg mx-auto">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 bg-accent/10 text-accent border border-accent/20 rounded-full px-4 py-1.5 mb-3">
+          <Zap className="w-4 h-4" />
+          <span className="text-sm font-semibold">Express Trade</span>
         </div>
+        <h2 className="font-serif text-2xl sm:text-3xl text-foreground">
+          {mode === "buy" ? "Buy crypto instantly" : "Sell crypto instantly"}
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1">Best rate · 0.5% fee · Funds in ~92 seconds</p>
+      </div>
 
-        {/* Swap Button */}
-        <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSwapCurrencies}
-            className="rounded-full p-2 bg-slate-800 hover:bg-slate-700 border border-slate-700"
-          >
-            <ArrowUpDown className="w-4 h-4 text-cyan-400" />
-          </Button>
-        </div>
-
-        {/* You Receive Section */}
-        <div className="space-y-2">
-          <label className="text-sm text-slate-400">You Receive</label>
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              value={receiveAmount}
-              readOnly
-              className="flex-1 bg-slate-800 border-slate-700 text-white text-lg font-medium"
-            />
-            <Select value={receiveCurrency} onValueChange={setReceiveCurrency}>
-              <SelectTrigger className="w-24 bg-slate-800 border-slate-700 text-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {CURRENCIES.map((currency) => (
-                  <SelectItem key={currency.value} value={currency.value} className="text-white hover:bg-slate-700">
-                    {currency.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Rate and Fee Info */}
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between items-center">
-            <span className="text-slate-400">Rate</span>
-            <span className="text-white font-medium">
-              1 {receiveCurrency} = {paySymbol}
-              {exchangeRate.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-slate-400 flex items-center gap-1">
-              Fee
-              <Info className="w-3 h-3" />
-            </span>
-            <span className="text-white font-medium">{fee}%</span>
-          </div>
-        </div>
-
-        {/* Trade Button */}
-        <Button
-          onClick={handleInstantTrade}
-          disabled={isLoading || !payAmount || Number(payAmount) <= 0}
-          className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-3 rounded-lg disabled:opacity-50"
+      {/* Buy / Sell toggle */}
+      <div className="flex rounded-xl border border-border overflow-hidden mb-5">
+        <button
+          onClick={() => setMode("buy")}
+          className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+            mode === "buy" ? "bg-green-600 text-white" : "text-muted-foreground hover:bg-muted"
+          }`}
         >
-          <Zap className="w-4 h-4 mr-2" />
-          {isLoading ? "Processing..." : `Buy ${receiveCurrency} Instantly`}
-        </Button>
+          Buy {asset}
+        </button>
+        <button
+          onClick={() => setMode("sell")}
+          className={`flex-1 py-2.5 text-sm font-semibold transition-colors ${
+            mode === "sell" ? "bg-destructive text-destructive-foreground" : "text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          Sell {asset}
+        </button>
+      </div>
 
-        {/* Disclaimer */}
-        <p className="text-xs text-slate-500 text-center">
-          Express trades are executed instantly at market rates with a {fee}% service fee.
-        </p>
-      </CardContent>
-    </Card>
+      {/* Swap card */}
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-3 shadow-sm">
+        {/* You Pay row */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+            {mode === "buy" ? "You pay (₦)" : "You sell"}
+          </Label>
+          <div className="flex items-center gap-2">
+            {mode === "buy" ? (
+              <>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₦</span>
+                  <Input
+                    type="number"
+                    placeholder="500,000"
+                    value={ngnAmount}
+                    onChange={(e) => handleNgn(e.target.value)}
+                    className="pl-7 text-base font-mono h-12"
+                  />
+                </div>
+                <AssetPicker value={asset} onChange={setAsset} />
+              </>
+            ) : (
+              <>
+                <Input
+                  type="number"
+                  placeholder="0.0000"
+                  value={cryptoAmount}
+                  onChange={(e) => handleCrypto(e.target.value)}
+                  className="flex-1 text-base font-mono h-12"
+                />
+                <AssetPicker value={asset} onChange={setAsset} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Swap button */}
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={swap}
+            className="w-9 h-9 rounded-full border border-border bg-background flex items-center justify-center hover:bg-muted transition-colors"
+          >
+            <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* You Receive row */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+            {mode === "buy" ? "You receive" : "You receive (₦)"}
+          </Label>
+          <div className="flex items-center gap-2">
+            {mode === "buy" ? (
+              <>
+                <Input
+                  type="text"
+                  readOnly
+                  value={cryptoAmount}
+                  placeholder="0.0000"
+                  className="flex-1 text-base font-mono h-12 bg-muted/50"
+                />
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border border-border min-w-[100px]`}>
+                  <div className={`w-6 h-6 rounded-full ${ASSETS.find((a) => a.symbol === asset)?.color} flex items-center justify-center text-white text-xs font-bold`}>
+                    {ASSETS.find((a) => a.symbol === asset)?.glyph}
+                  </div>
+                  <span className="font-semibold text-sm">{asset}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">₦</span>
+                  <Input
+                    type="text"
+                    readOnly
+                    value={ngnAmount}
+                    placeholder="0.00"
+                    className="pl-7 text-base font-mono h-12 bg-muted/50"
+                  />
+                </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border min-w-[100px]">
+                  <span className="text-muted-foreground">₦</span>
+                  <span className="font-semibold text-sm">NGN</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Rate + fee info */}
+        {ngnAmount && parseFloat(ngnAmount) > 0 && (
+          <div className="bg-muted/60 rounded-xl p-3.5 space-y-2 text-xs">
+            {[
+              { label: "Rate", value: `₦${rate.toLocaleString("en-NG")} / ${asset}` },
+              { label: "Fee (0.5%)", value: fee > 0 ? `₦${fee.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "₦0.00" },
+              { label: "Estimated time", value: "~92 seconds" },
+            ].map((r) => (
+              <div key={r.label} className="flex items-center justify-between">
+                <span className="text-muted-foreground">{r.label}</span>
+                <span className="font-mono font-medium">{r.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payment method */}
+      <div className="mt-4">
+        <Label className="text-xs text-muted-foreground uppercase tracking-wide font-semibold mb-2 block">
+          {mode === "buy" ? "Pay with" : "Receive to"}
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {PAYMENT_METHODS.map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setPaymentMethod(m)}
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                paymentMethod === m
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border text-muted-foreground hover:bg-muted"
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <Button
+        onClick={submit}
+        disabled={!canSubmit}
+        className={`w-full mt-5 h-12 text-base font-semibold ${
+          mode === "buy"
+            ? "bg-green-600 hover:bg-green-700 text-white"
+            : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+        }`}
+      >
+        <Zap className="w-4 h-4 mr-2" />
+        {loading
+          ? "Processing…"
+          : mode === "buy"
+          ? `Buy ${asset} with ${paymentMethod}`
+          : `Sell ${asset} → ${paymentMethod}`}
+      </Button>
+
+      {/* Trust row */}
+      <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5">
+          <Shield className="w-3.5 h-3.5 text-primary" />
+          Multi-sig escrow
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-primary" />
+          ~92s release
+        </div>
+        <div className="flex items-center gap-1.5">
+          <CheckCircle className="w-3.5 h-3.5 text-primary" />
+          Zero hidden fees
+        </div>
+      </div>
+    </div>
   )
 }

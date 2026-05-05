@@ -1,24 +1,33 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Work_Sans, Open_Sans } from "next/font/google"
+import { Inter, DM_Serif_Display, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const workSans = Work_Sans({
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-work-sans",
+  variable: "--font-inter",
 })
 
-const openSans = Open_Sans({
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-dm-serif",
+})
+
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-open-sans",
+  variable: "--font-mono",
 })
 
 export const metadata: Metadata = {
-  title: "WasoPay - Secure P2P Crypto Trading",
-  description: "Trade USDT, BTC, and ETH with NGN on Nigeria's most trusted P2P platform",
+  title: "WasoPay — Trade crypto, the Nigerian way",
+  description:
+    "Buy and sell USDT, BTC, and ETH with Nigerian Naira. Multi-sig escrow, verified merchants, and 92-second average release time.",
   generator: "WasoPay",
 }
 
@@ -28,7 +37,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${workSans.variable} ${openSans.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${dmSerifDisplay.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}

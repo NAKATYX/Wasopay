@@ -1,242 +1,301 @@
 "use client"
 
 import { useState } from "react"
-import { KYCVerification, KYCLevel } from "@/components/merchant/kyc-verification"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Settings, User, Shield, Activity } from "lucide-react"
+import {
+  ArrowLeft,
+  CheckCircle,
+  Clock,
+  Upload,
+  AlertTriangle,
+  Smartphone,
+  Monitor,
+  Shield,
+  ChevronRight,
+} from "lucide-react"
 import Link from "next/link"
-import { Logo } from "@/components/ui/logo"
 
-// Mock user data
-const MOCK_USER = {
-  id: "user_123",
-  username: "cryptotrader",
-  displayName: "CryptoTrader",
-  email: "trader@example.com",
-  phone: "+234 800 000 0000",
-  avatar: "/cryptotrader.png",
-  joinedAt: new Date("2023-06-15"),
-  kycLevel: KYCLevel.STANDARD,
-  stats: {
-    totalTrades: 45,
-    completionRate: 96,
-    totalVolume: 2500000,
-  },
-}
-
-const MOCK_DOCUMENTS = [
+const TIERS = [
   {
-    type: "NATIONAL_ID" as const,
-    status: "approved" as const,
-    uploadedAt: new Date("2023-07-01"),
-    reviewedAt: new Date("2023-07-02"),
+    n: 1,
+    label: "Basic",
+    limit: "₦200K / day",
+    items: ["Phone number", "Email"],
+    done: true,
+    current: false,
   },
   {
-    type: "UTILITY_BILL" as const,
-    status: "pending" as const,
-    uploadedAt: new Date("2024-01-15"),
+    n: 2,
+    label: "Standard",
+    limit: "₦5M / day",
+    lifetime: "₦80M lifetime",
+    items: ["BVN", "Government ID", "Selfie"],
+    done: true,
+    current: true,
+  },
+  {
+    n: 3,
+    label: "Enhanced",
+    limit: "₦50M / day",
+    items: ["Address proof", "Source of funds"],
+    done: false,
+    current: false,
+  },
+  {
+    n: 4,
+    label: "Institutional",
+    limit: "Unlimited",
+    items: ["CAC documents", "Director IDs", "Compliance call"],
+    done: false,
+    current: false,
   },
 ]
 
+const DOCUMENTS = [
+  {
+    id: "address",
+    label: "Proof of address",
+    hint: "Utility bill or bank statement (last 3 months)",
+    status: "verified" as const,
+    filename: "utility-bill.pdf",
+  },
+  {
+    id: "funds",
+    label: "Source of funds declaration",
+    hint: "Salary slip, business registration, or investment statement",
+    status: "review" as const,
+    filename: undefined,
+  },
+  {
+    id: "selfie",
+    label: "Selfie with ID",
+    hint: "Hold your ID next to your face in good lighting",
+    status: "optional" as const,
+    filename: undefined,
+  },
+]
+
+const SESSIONS = [
+  { device: "iPhone 15", location: "Lagos", time: "Active now", active: true },
+  { device: "Chrome · macOS", location: "Lagos", time: "2 hours ago", active: false },
+  { device: "Android · Abuja", location: "Abuja", time: "3 days ago", active: false },
+]
+
+const DOC_STATUS = {
+  verified: { label: "Verified", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+  review: { label: "In review", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  optional: { label: "Optional", className: "bg-muted text-muted-foreground" },
+}
+
 export default function ProfilePage() {
-  const [user] = useState(MOCK_USER)
-  const [documents, setDocuments] = useState(MOCK_DOCUMENTS)
-
-  const handleDocumentUpload = async (type: string, file: File) => {
-    console.log("Uploading document:", type, file.name)
-    // Simulate upload
-    const newDoc = {
-      type: type as any,
-      status: "pending" as const,
-      uploadedAt: new Date(),
-    }
-    setDocuments((prev) => [...prev.filter((doc) => doc.type !== type), newDoc])
-  }
-
-  const handleSubmitForReview = () => {
-    console.log("Submitting for KYC review")
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(amount)
-  }
-
-  const getKYCLevelName = (level: number) => {
-    const levels = ["Unverified", "Basic", "Standard", "Enhanced", "Institutional"]
-    return levels[level] || "Unknown"
-  }
+  const [currentTier] = useState(2)
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" asChild>
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur-md sticky top-0 z-50 h-14 flex items-center">
+        <div className="max-w-[1100px] mx-auto w-full px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground" asChild>
               <Link href="/p2p">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Market
+                <ArrowLeft className="w-4 h-4" />
               </Link>
             </Button>
-
-            <Logo size="sm" showSubtitle subtitle="My Profile" />
+            <Link href="/">
+              <Image src="/wasopay-logo.png" alt="WasoPay" height={28} width={120} className="h-7 w-auto" priority />
+            </Link>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" asChild className="bg-transparent">
-              <Link href="/settings">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Link>
-            </Button>
-          </div>
+          <h1 className="font-semibold text-sm">Verification</h1>
+          <div className="w-24" />
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="space-y-6">
-          {/* Profile Overview */}
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex flex-col items-center md:items-start">
-                  <Avatar className="w-24 h-24">
-                    <AvatarImage src={user.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="text-2xl">{user.displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-8 flex flex-col gap-8">
+        {/* ── Tier Stepper ── */}
+        <div className="bg-card border border-border rounded-2xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-semibold">Verification levels</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                You are currently on <strong>Tier 2 · Standard</strong>
+              </p>
+            </div>
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-medium">
+              Tier 2 · Standard
+            </Badge>
+          </div>
 
-                  <div className="text-center md:text-left mt-4">
-                    <h1 className="text-2xl font-bold font-serif">{user.displayName}</h1>
-                    <p className="text-muted-foreground">@{user.username}</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Member since {user.joinedAt.toLocaleDateString()}
-                    </p>
-                  </div>
+          {/* Stepper */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {TIERS.map((tier) => (
+              <div
+                key={tier.n}
+                className={`rounded-xl border p-4 ${
+                  tier.current
+                    ? "border-primary bg-primary/5"
+                    : tier.done
+                    ? "border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10"
+                    : "border-border bg-background"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Tier {tier.n}
+                  </span>
+                  {tier.done && <CheckCircle className="w-4 h-4 text-green-600" />}
+                  {tier.current && !tier.done && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
                 </div>
+                <div className="font-semibold text-sm mb-1">{tier.label}</div>
+                <div className="text-xs text-primary font-medium mb-1">{tier.limit}</div>
+                {tier.lifetime && <div className="text-xs text-muted-foreground mb-2">{tier.lifetime}</div>}
+                <ul className="space-y-0.5">
+                  {tier.items.map((item) => (
+                    <li key={item} className="text-xs text-muted-foreground flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-muted-foreground/50 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
 
-                <div className="flex-1 space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant="default">{getKYCLevelName(user.kycLevel)} Level</Badge>
-                  </div>
+          <div className="mt-4 flex justify-end">
+            <Button size="sm" className="text-sm">
+              Continue to Tier 3 <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">{user.stats.completionRate}%</div>
-                      <div className="text-sm text-muted-foreground">Completion Rate</div>
+        {/* ── Main grid ── */}
+        <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+          {/* Document upload zone */}
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="p-5 border-b border-border">
+              <h2 className="font-semibold">Tier 3 · Enhanced verification</h2>
+              <p className="text-sm text-muted-foreground mt-1">Two short steps. Reviewed by a human within 4 hours.</p>
+            </div>
+
+            {/* Rejection warning */}
+            <div className="mx-5 mt-5 flex gap-2.5 p-3.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                <strong>Earlier rejection:</strong> BVN photo did not match your selfie clearly. Re-take in daylight, no glasses.
+              </p>
+            </div>
+
+            <div className="p-5 space-y-3">
+              {DOCUMENTS.map((doc) => {
+                const s = DOC_STATUS[doc.status]
+                return (
+                  <div
+                    key={doc.id}
+                    className="border border-border rounded-xl p-4 flex items-start gap-4"
+                  >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
+                      doc.status === "verified" ? "bg-green-100 dark:bg-green-900/30" :
+                      doc.status === "review" ? "bg-amber-100 dark:bg-amber-900/30" :
+                      "bg-muted"
+                    }`}>
+                      {doc.status === "verified" ? (
+                        <CheckCircle className="w-5 h-5 text-green-600" />
+                      ) : doc.status === "review" ? (
+                        <Clock className="w-5 h-5 text-amber-600" />
+                      ) : (
+                        <Upload className="w-5 h-5 text-muted-foreground" />
+                      )}
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold">{user.stats.totalTrades}</div>
-                      <div className="text-sm text-muted-foreground">Total Trades</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold">{formatCurrency(user.stats.totalVolume)}</div>
-                      <div className="text-sm text-muted-foreground">Total Volume</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <span className="font-medium text-sm">{doc.label}</span>
+                        <Badge className={`text-[10px] px-1.5 py-0 border-0 ${s.className}`}>{s.label}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{doc.hint}</p>
+                      {doc.filename && (
+                        <p className="text-xs font-mono text-muted-foreground mb-2">{doc.filename}</p>
+                      )}
+                      <Button size="sm" variant="outline" className="bg-transparent text-xs h-7 px-3">
+                        {doc.status === "verified" ? "Replace" : "Upload"}
+                      </Button>
                     </div>
                   </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Profile card */}
+          <div className="flex flex-col gap-4">
+            {/* Identity */}
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-teal-400 flex items-center justify-center text-white text-lg font-bold shrink-0">
+                  AO
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Adaeze Okafor</span>
+                    <CheckCircle className="w-4 h-4 text-primary" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">Member since March 2024 · Lagos</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Profile Tabs */}
-          <Tabs defaultValue="verification" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="verification" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Verification
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="flex items-center gap-2">
-                <Activity className="w-4 h-4" />
-                Activity
-              </TabsTrigger>
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="verification">
-              <KYCVerification
-                currentLevel={user.kycLevel}
-                documents={documents}
-                onDocumentUpload={handleDocumentUpload}
-                onSubmitForReview={handleSubmitForReview}
-              />
-            </TabsContent>
-
-            <TabsContent value="activity" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Recent Activity</h3>
-                    <p className="text-muted-foreground">Your trading activity will appear here.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="profile" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Display Name</label>
-                      <div className="mt-1 p-2 border rounded-md">{user.displayName}</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Username</label>
-                      <div className="mt-1 p-2 border rounded-md">@{user.username}</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Email</label>
-                      <div className="mt-1 p-2 border rounded-md">{user.email}</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Phone</label>
-                      <div className="mt-1 p-2 border rounded-md">{user.phone}</div>
+              <div className="space-y-3">
+                {[
+                  { label: "BVN", value: "••• •••• 4421", verified: true },
+                  { label: "Phone", value: "+234 803 ••• 2241", verified: false },
+                  { label: "Email", value: "adaeze@—mail.com", verified: false },
+                  { label: "2FA", value: "Authenticator app", verified: true },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground w-14">{row.label}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-xs">{row.value}</span>
+                      {row.verified && <CheckCircle className="w-3.5 h-3.5 text-primary" />}
                     </div>
                   </div>
-                  <Button>Edit Profile</Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                ))}
+              </div>
+            </div>
 
-            <TabsContent value="settings" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <Settings className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">Settings</h3>
-                    <p className="text-muted-foreground">Account settings and preferences will be available here.</p>
+            {/* Sessions */}
+            <div className="bg-card border border-border rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm">Active sessions</h3>
+              </div>
+              <div className="space-y-3">
+                {SESSIONS.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        {s.device.includes("iPhone") || s.device.includes("Android") ? (
+                          <Smartphone className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <Monitor className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium truncate">{s.device}</span>
+                          {s.active && <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />}
+                        </div>
+                        <span className="text-xs text-muted-foreground">{s.location} · {s.time}</span>
+                      </div>
+                    </div>
+                    {!s.active && (
+                      <Button size="sm" variant="ghost" className="text-xs text-muted-foreground h-7 px-2 shrink-0">
+                        Sign out
+                      </Button>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

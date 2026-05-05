@@ -1,37 +1,32 @@
 import Image from "next/image"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 interface LogoProps {
   className?: string
   size?: "sm" | "md" | "lg"
+  href?: string
 }
 
-export function Logo({ className, size = "md" }: LogoProps) {
-  const sizeClasses = {
-    sm: "h-6",
-    md: "h-8",
-    lg: "h-12",
-  }
+const heights: Record<string, number> = { sm: 28, md: 32, lg: 44 }
 
-  const textSizeClasses = {
-    sm: "text-lg",
-    md: "text-xl",
-    lg: "text-3xl",
-  }
-
+export function Logo({ className, size = "md", href = "/" }: LogoProps) {
+  const h = heights[size]
+  const img = (
+    <Image
+      src="/wasopay-logo.png"
+      alt="WasoPay"
+      height={h}
+      width={h * 4}
+      className={cn("w-auto object-contain", `h-[${h}px]`)}
+      style={{ height: h }}
+      priority
+    />
+  )
+  if (!href) return <span className={className}>{img}</span>
   return (
-    <div className={cn("flex items-center space-x-3", className)}>
-      <div className="relative">
-        <Image
-          src="/wasopay-logo-icon.png"
-          alt="WasoPay"
-          width={32}
-          height={32}
-          className={cn(sizeClasses[size], "w-auto")}
-          priority
-        />
-      </div>
-      <span className={cn("font-bold text-foreground", textSizeClasses[size])}>Wasopay</span>
-    </div>
+    <Link href={href} className={cn("inline-flex items-center", className)}>
+      {img}
+    </Link>
   )
 }

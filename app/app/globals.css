@@ -4,85 +4,89 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color tokens for WasoPay professional P2P trading platform */
-  --background: oklch(1 0 0); /* #ffffff - Main background */
-  --foreground: oklch(0.345 0.019 252.37); /* #475569 - Body text */
-  --card: oklch(0.984 0.013 195.76); /* #ecfeff - Card backgrounds */
-  --card-foreground: oklch(0.278 0.029 256.85); /* #374151 - Card text */
-  --popover: oklch(1 0 0); /* #ffffff - Popover background */
-  --popover-foreground: oklch(0.345 0.019 252.37); /* #475569 - Popover text */
-  --primary: oklch(0.337 0.078 200.33); /* #164e63 - Primary cyan for trust */
-  --primary-foreground: oklch(1 0 0); /* #ffffff - Primary text */
-  --secondary: oklch(0.748 0.17 110.72); /* #84cc16 - Accent green for growth */
-  --secondary-foreground: oklch(0.278 0.029 256.85); /* #374151 - Secondary text */
-  --muted: oklch(0.984 0.008 142.5); /* #f0fdf4 - Muted backgrounds */
-  --muted-foreground: oklch(0.278 0.029 256.85); /* #374151 - Muted text */
-  --accent: oklch(0.631 0.194 38.69); /* #ea580c - Additional accent orange */
-  --accent-foreground: oklch(1 0 0); /* #ffffff - Accent text */
-  --destructive: oklch(0.696 0.205 35.75); /* #f97316 - Error/alert color */
-  --destructive-foreground: oklch(1 0 0); /* #ffffff - Destructive text */
-  --border: oklch(0.853 0.005 286.38); /* #d1d5db - Border color */
-  --input: oklch(1 0 0); /* #ffffff - Input backgrounds */
-  --ring: oklch(0.337 0.078 200.33 / 0.5); /* Primary with opacity for focus rings */
-  --chart-1: oklch(0.486 0.131 152.28); /* #15803d - Chart green */
-  --chart-2: oklch(0.631 0.194 38.69); /* #ea580c - Chart orange */
-  --chart-3: oklch(0.748 0.17 110.72); /* #84cc16 - Chart lime */
-  --chart-4: oklch(0.337 0.078 200.33); /* #164e63 - Chart cyan */
-  --chart-5: oklch(0.696 0.205 35.75); /* #f97316 - Chart red-orange */
-  --radius: 0.5rem; /* Standard border radius */
-  --sidebar: oklch(0.984 0.013 195.76); /* #ecfeff - Sidebar background */
-  --sidebar-foreground: oklch(0.278 0.029 256.85); /* #374151 - Sidebar text */
-  --sidebar-primary: oklch(0.337 0.078 200.33); /* #164e63 - Sidebar primary */
-  --sidebar-primary-foreground: oklch(1 0 0); /* #ffffff - Sidebar primary text */
-  --sidebar-accent: oklch(0.748 0.17 110.72); /* #84cc16 - Sidebar accent */
-  --sidebar-accent-foreground: oklch(0.278 0.029 256.85); /* #374151 - Sidebar accent text */
-  --sidebar-border: oklch(0.853 0.005 286.38); /* #d1d5db - Sidebar border */
-  --sidebar-ring: oklch(0.337 0.078 200.33 / 0.5); /* Sidebar focus ring */
-  --font-open-sans: "Open Sans", sans-serif; /* Open Sans font */
-  --font-work-sans: "Work Sans", serif; /* Work Sans font */
+  /* WasoPay brand tokens — teal primary, amber accent */
+  --background: oklch(0.98 0.003 240);
+  --foreground: oklch(0.13 0.02 240);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0.02 240);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.02 240);
+  --primary: oklch(0.40 0.072 185);        /* brand teal #0a6a6a */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.018 185);      /* light teal tint */
+  --secondary-foreground: oklch(0.40 0.072 185);
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.45 0.012 240);
+  --accent: oklch(0.73 0.155 75);          /* amber #f5a524 */
+  --accent-foreground: oklch(0.13 0.02 75);
+  --destructive: oklch(0.52 0.20 25);      /* sell red #dc2626 */
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.88 0.005 240);
+  --input: oklch(0.88 0.005 240);
+  --ring: oklch(0.40 0.072 185 / 0.4);
+  --chart-1: oklch(0.53 0.13 145);         /* buy green */
+  --chart-2: oklch(0.52 0.20 25);          /* sell red */
+  --chart-3: oklch(0.73 0.155 75);         /* amber */
+  --chart-4: oklch(0.40 0.072 185);        /* teal */
+  --chart-5: oklch(0.60 0.12 275);         /* blue */
+  --radius: 0.5rem;
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.13 0.02 240);
+  --sidebar-primary: oklch(0.40 0.072 185);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.96 0.018 185);
+  --sidebar-accent-foreground: oklch(0.40 0.072 185);
+  --sidebar-border: oklch(0.88 0.005 240);
+  --sidebar-ring: oklch(0.40 0.072 185 / 0.4);
+  --font-inter: "Inter", sans-serif;
+  --font-dm-serif: "DM Serif Display", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* semantic buy/sell */
+  --buy: oklch(0.53 0.13 145);
+  --sell: oklch(0.52 0.20 25);
+  --warn: oklch(0.73 0.155 75);
 }
 
 .dark {
-  /* Dark mode tokens adapted for WasoPay */
-  --background: oklch(0.145 0 0); /* Dark background */
-  --foreground: oklch(0.985 0 0); /* Light text */
-  --card: oklch(0.205 0 0); /* Dark card background */
-  --card-foreground: oklch(0.985 0 0); /* Light card text */
-  --popover: oklch(0.145 0 0); /* Dark popover */
-  --popover-foreground: oklch(0.985 0 0); /* Light popover text */
-  --primary: oklch(0.6 0.15 195); /* Lighter cyan for dark mode */
-  --primary-foreground: oklch(0.145 0 0); /* Dark text on primary */
-  --secondary: oklch(0.748 0.17 110.72); /* Keep accent green */
-  --secondary-foreground: oklch(0.145 0 0); /* Dark text on secondary */
-  --muted: oklch(0.269 0 0); /* Dark muted */
-  --muted-foreground: oklch(0.708 0 0); /* Light muted text */
-  --accent: oklch(0.631 0.194 38.69); /* Keep accent orange */
-  --accent-foreground: oklch(1 0 0); /* White text on accent */
-  --destructive: oklch(0.696 0.205 35.75); /* Keep destructive color */
-  --destructive-foreground: oklch(1 0 0); /* White text on destructive */
-  --border: oklch(0.269 0 0); /* Dark border */
-  --input: oklch(0.269 0 0); /* Dark input */
-  --ring: oklch(0.6 0.15 195 / 0.5); /* Dark mode focus ring */
-  --chart-1: oklch(0.6 0.15 152); /* Adjusted chart colors for dark */
-  --chart-2: oklch(0.7 0.2 39);
-  --chart-3: oklch(0.748 0.17 110.72);
-  --chart-4: oklch(0.6 0.15 195);
-  --chart-5: oklch(0.696 0.205 35.75);
-  --sidebar: oklch(0.205 0 0); /* Dark sidebar */
-  --sidebar-foreground: oklch(0.985 0 0); /* Light sidebar text */
-  --sidebar-primary: oklch(0.6 0.15 195); /* Light primary for sidebar */
-  --sidebar-primary-foreground: oklch(0.145 0 0); /* Dark text on sidebar primary */
-  --sidebar-accent: oklch(0.748 0.17 110.72); /* Sidebar accent */
-  --sidebar-accent-foreground: oklch(0.145 0 0); /* Dark text on sidebar accent */
-  --sidebar-border: oklch(0.269 0 0); /* Dark sidebar border */
-  --sidebar-ring: oklch(0.6 0.15 195 / 0.5); /* Dark sidebar ring */
+  --background: oklch(0.12 0.02 235);
+  --foreground: oklch(0.92 0.005 240);
+  --card: oklch(0.16 0.02 235);
+  --card-foreground: oklch(0.92 0.005 240);
+  --popover: oklch(0.16 0.02 235);
+  --popover-foreground: oklch(0.92 0.005 240);
+  --primary: oklch(0.60 0.09 185);
+  --primary-foreground: oklch(0.12 0.02 235);
+  --secondary: oklch(0.20 0.03 185);
+  --secondary-foreground: oklch(0.75 0.07 185);
+  --muted: oklch(0.20 0.01 240);
+  --muted-foreground: oklch(0.65 0.01 240);
+  --accent: oklch(0.73 0.155 75);
+  --accent-foreground: oklch(0.12 0.02 75);
+  --destructive: oklch(0.55 0.20 25);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.22 0.015 235);
+  --input: oklch(0.22 0.015 235);
+  --ring: oklch(0.60 0.09 185 / 0.4);
+  --chart-1: oklch(0.60 0.14 145);
+  --chart-2: oklch(0.58 0.20 25);
+  --chart-3: oklch(0.73 0.155 75);
+  --chart-4: oklch(0.60 0.09 185);
+  --chart-5: oklch(0.65 0.12 275);
+  --sidebar: oklch(0.14 0.02 235);
+  --sidebar-foreground: oklch(0.92 0.005 240);
+  --sidebar-primary: oklch(0.60 0.09 185);
+  --sidebar-primary-foreground: oklch(0.12 0.02 235);
+  --sidebar-accent: oklch(0.20 0.03 185);
+  --sidebar-accent-foreground: oklch(0.75 0.07 185);
+  --sidebar-border: oklch(0.22 0.015 235);
+  --sidebar-ring: oklch(0.60 0.09 185 / 0.4);
 }
 
 @theme inline {
-  /* Updated font configuration for WasoPay typography */
-  --font-sans: var(--font-open-sans); /* Open Sans for body text */
-  --font-serif: var(--font-work-sans); /* Work Sans for headings */
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-dm-serif);
+  --font-mono: var(--font-mono);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -128,5 +132,8 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+  }
+  .font-mono {
+    font-family: var(--font-mono);
   }
 }
