@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { CreateOfferForm } from "@/components/p2p/offer-creation/create-offer-form"
 import { OfferDashboard } from "@/components/p2p/offer-management/offer-dashboard"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Bitcoin } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 // Mock offers data
@@ -140,21 +141,15 @@ export default function PostOfferPage() {
               </Link>
             </Button>
 
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Bitcoin className="w-5 h-5 text-primary-foreground" />
-              </div>
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain" priority />
               <div>
-                <h1 className="font-serif font-bold text-lg">WasoPay</h1>
-                <p className="text-sm text-muted-foreground">
-                  {currentView === "dashboard"
-                    ? "Offer Management"
-                    : currentView === "create"
-                      ? "Create Offer"
-                      : "Edit Offer"}
+                <div className="font-bold text-base leading-tight">WasoPay</div>
+                <p className="text-xs text-muted-foreground">
+                  {currentView === "dashboard" ? "Offer Management" : currentView === "create" ? "Create Offer" : "Edit Offer"}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
 
           <div className="flex items-center space-x-2">

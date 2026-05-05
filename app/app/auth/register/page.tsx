@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
         <div className="relative flex-1 flex flex-col p-10 xl:p-14">
           <Link href="/" className="flex items-center gap-2.5 mb-auto">
-            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain brightness-0 invert" priority />
+            <Image src="/wasopay-logo.png" alt="WasoPay" height={32} width={32} className="h-8 w-8 object-contain" priority />
             <span className="font-bold text-lg text-white">WasoPay</span>
           </Link>
 
